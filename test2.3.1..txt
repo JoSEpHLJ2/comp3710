@@ -1,0 +1,45 @@
+1️⃣ Device Configuration (GPU Acceleration)
+Before modification (the original AI version may not support GPU):
+# no device specified
+After modification:
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print("Using device:", device)
+# Move z, zs, ns to GPU
+z, zs, ns = z.to(device), zs.to(device), ns.to(device)
+✅ Purpose: Ensure the tensors are computed on the GPU to speed up rendering.
+2️⃣ Tensor Type and Initialization
+Before modification:
+ns = torch.zeros_like(z)
+After modification:
+ns = torch.zeros_like(z, dtype=torch.int32)
+✅ Purpose: Make sure the counter is of integer type to avoid type mismatch.
+3️⃣ Batch Iteration Logic Optimization
+Before modification (classic Python loop version might iterate over each pixel):
+for pixel in grid:
+    ...
+After modification (batch computation with tensors):
+for i in range(max_iter):
+    zs_ = zs * zs + z
+    not_diverged = torch.abs(zs_) < 4.0
+    ns += not_diverged
+    zs = zs_
+✅ Purpose: Use a tensor mask to compute the whole image at once, avoiding slow Python loops.
+4️⃣ Color Mapping and Plotting
+Before modification:
+# NumPy version, direct manipulation
+After modification:
+img = processFractal(ns.cpu().numpy())
+plt.imshow(img)
+plt.axis("off")
+plt.tight_layout(pad=0)
+plt.savefig("mandelbrot_gpu.png", dpi=300, bbox_inches="tight")
+✅ Purpose:
+.cpu().numpy() moves the GPU tensor back to CPU so Matplotlib can display it
+Save the image as mandelbrot_gpu.png
+dpi ensures high resolution
+5️⃣ Minor Optimizations
+max_iter is defined as a separate variable for easier adjustment of iteration count
+not_diverged logic stays as a GPU batch operation, reducing Python-level loops
+Summary:
+Key modifications: .to(device) for GPU, integer type ns, batch iteration mask, .cpu().numpy() for plotting
+Purpose: Ensure the Mandelbrot set renders quickly on GPU and can be directly visualized and saved.
