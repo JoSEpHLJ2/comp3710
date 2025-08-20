@@ -12,7 +12,7 @@ print("Using device:", device)
 # 高分辨率 Mandelbrot 集（可放大区域）
 # -------------------------------
 # 减小步长提高分辨率，同时放大某个区域
-Y, X = np.mgrid[-0.75:0.75:0.002, -1.25:-0.25:0.002]
+Y, X = np.mgrid[-1.5:1.5:0.002, -1.5:1.5:0.002]
 
 # 转换为 PyTorch 张量
 x = torch.tensor(X, dtype=torch.float32).to(device)
