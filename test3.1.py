@@ -58,7 +58,16 @@ def processFractal(a):
     a = img
     a = np.uint8(np.clip(a, 0, 255))
     return a
-
+    
+def color_map_1(a):
+    """彩虹渐变"""
+    a_cyclic = (6.28 * a / 20.0).reshape(list(a.shape) + [1])
+    img = np.concatenate([
+        128 + 127 * np.sin(a_cyclic),
+        128 + 127 * np.sin(a_cyclic + 2),
+        128 + 127 * np.sin(a_cyclic + 4)
+    ], 2)
+    return np.uint8(np.clip(img, 0, 255))
 # Plot
 # 生成处理后的图像
 img = processFractal(ns.cpu().numpy())
