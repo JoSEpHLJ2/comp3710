@@ -273,3 +273,69 @@ Coloring	Escape time (speed of divergence)	Basin of attraction (which root)
 Visualization	Boundary of bounded/unbounded	Boundary between root basins
 👉 So, Mandelbrot is divergence coloring, while Newton is root-attraction coloring.
 Would you like me to also show you the Julia set code (close cousin of Mandelbrot) so you can compare all three types side by side?
+
+If I just want to present it in the style of a rainbow chart?
+ChatGPT said: 
+Understood 👍 If you only want the rainbow style, then you can keep the "color_map_1" I wrote earlier separately, remove the loop, and restore it to your original similar logic. 
+Here is the concise version of the code for you: 
+import torch
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Device configuration
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+# Create a grid in the complex plane
+Y, X = np.mgrid[-1.3:1.3:0.005, -2:1:0.005] 
+eps = 1e-6
+
+# Load into PyTorch tensors
+x = torch.tensor(X, dtype=torch.float32)
+y = torch.tensor(Y, dtype=torch.float32)
+z = torch.complex(x, y)  # constant c
+zs = z.clone()           # z_0 = c
+ns = torch.zeros_like(z) # divergence counter
+
+# Transfer to GPU if available
+z, zs, ns = z.to(device), zs.to(device), ns.to(device)
+ns = torch.zeros(z.shape, dtype=torch.int32, device=device)
+converged_root = torch.full(z.shape, -1, dtype=torch.int32, device=device)
+
+# Roots of z^3 = 1
+roots = torch.tensor([
+1+0j,
+-0.5 + 0.8660254j,
+-0.5 - 0.8660254j ], dtype=torch.complex64, device=device)
+
+# Newton iterations
+for i in range(200):
+zs = zs - (zs**3 - 1) / (3 * zs**2 + eps)
+for j, r in enumerate(roots):
+mask = (converged_root == -1) & (torch.abs(zs - r) < 1e-3)
+converged_root[mask] = j
+ns[mask] = i
+
+# Rainbow Style Mapping def color_map_rainbow(a):
+a_cyclic = (6.28 * a / 20.0).reshape(list(a.shape) + [1]) img = np.concatenate([
+10 + 20 * np.cos(a_cyclic),
+30 + 50 * np.sin(a_cyclic),
+155 - 80 * np.cos(a_cyclic)
+], 2) img[a == a.max()] = 0
+return np.uint8(np.clip(img, 0, 255))
+
+# Generate Image ns_cpu = ns.cpu().numpy()
+img = color_map_rainbow(ns_cpu)
+
+plt.figure(figsize=(16, 10))
+plt.imshow(img)
+plt.axis("off")
+plt.tight_layout(pad=0)
+plt.savefig("Newton_fractal_Rainbow.png", dpi=300, bbox_inches="tight")
+plt.show()
+
+?? Summary of Changes 
+Only one function "color_map_rainbow()" is retained, corresponding to the desired rainbow style. 
+Removed other colorization functions and loops. 
+Save the image file name as "Newton_fractal_Rainbow.png". 
+Finally, plt.show() was added to make it convenient for you to directly view the results. 
+Would you like me to modify it so that it saves both the rainbow style and the rainbow gradient (in two versions, brighter and darker)? This way, it will highlight the main style while also showing the variations.
