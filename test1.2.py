@@ -1,22 +1,24 @@
-# 用 PyTorch 创建二维正弦函数的“条纹”图像
 import torch
-import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.pyplot as plt
 
-# 设置设备
+print("PyTorch Version:", torch.__version__)
+
+# Device configuration
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-# 创建坐标网格
-x_np, y_np = np.mgrid[-4.0:4.0:0.01, -4.0:4.0:0.01]
-x = torch.tensor(x_np, dtype=torch.float32).to(device)
-y = torch.tensor(y_np, dtype=torch.float32).to(device)
+# grid for computing image
+X, Y = np.mgrid[-4.0:4:0.01, -4.0:4:0.01]
 
-# 生成正弦函数图案，例如 sin(5x + 5y)
-z = torch.sin(5 * x + 5 * y)
+# load into PyTorch tensors
+x = torch.Tensor(X).to(device)
+y = torch.Tensor(Y).to(device)
 
-# 绘制正弦条纹
-plt.imshow(z.cpu().numpy(), extent=[-4, 4, -4, 4], cmap='seismic')
-plt.title("2D Sine Function (Stripes)")
+# Compute sine pattern (change here)
+z = torch.sin(x) * torch.sin(y)
+
+# plot
+plt.imshow(z.cpu().numpy(), cmap='viridis')  # 可以换 cmap 看效果
 plt.tight_layout()
 plt.show()
-plt.savefig("test1.2.png", dpi=300, bbox_inches="tight")
+plt.savefig("test1.1.png", dpi=300, bbox_inches="tight")
